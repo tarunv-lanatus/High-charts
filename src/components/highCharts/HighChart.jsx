@@ -65,7 +65,7 @@ export const HighChart = () => {
   }, [breakdownPoint]);
 
   const plotLines = useMemo(() => {
-    const lineCount = Math.ceil(sampleChartData.length / 10); // Example logic for determining the number of plot lines
+    const lineCount = Math.ceil(sampleChartData.length / 10);
     return Array.from({ length: lineCount }, (_, i) => ({
       color: "grey",
       width: 2,
@@ -80,8 +80,37 @@ export const HighChart = () => {
     });
   }, [breakdownPoint]);
 
+  const dataWithMarkerForConsumedWHAndEstimatedPower = (data) => {
+    return data.map((item, index) => {
+      const previousValue = index > 0 ? data[index - 1] : null;
+      const enabled = previousValue !== item || index === data.length - 1;
+      return {
+        y: item,
+        marker: {
+          enabled,
+          radius: 4,
+          symbol: "circle",
+        },
+      };
+    });
+  };
+
+  const dataWithMarkerForOthers = (data) => {
+    return data.map((item, index) => {
+      const enabled = index === 0 || index === data.length - 1;
+      return {
+        y: item,
+        marker: {
+          enabled,
+          radius: 4,
+          symbol: "circle",
+        },
+      };
+    });
+  };
+
   const options = {
-    chart: { type: "spline" },
+    chart: { type: "line" },
     title: { text: "Electric Demand Monitoring", align: "left" },
     xAxis: {
       title: { text: "Time (minutes)" },
@@ -108,50 +137,55 @@ export const HighChart = () => {
     },
     series: [
       {
-        data: precomputedData.alarmValueData,
+        data: dataWithMarkerForOthers(precomputedData.alarmValueData),
         name: "Alarm Value of Power",
         color: "red",
         lineWidth: 2,
-        marker: { enabled: true, radius: 4, symbol: "circle" },
+        enableMouseTracking: false,
+        marker: {
+          symbol: "circle",
+        },
       },
       {
-        data: precomputedData.targetValueData,
+        data: dataWithMarkerForOthers(precomputedData.targetValueData),
         name: "Target Value of Power",
         color: "yellow",
         lineWidth: 2,
-        marker: { enabled: true, radius: 4, symbol: "circle" },
+        enableMouseTracking: false,
+        marker: {
+          symbol: "circle",
+        },
       },
       {
-        data: precomputedData.trendLineData,
+        data: dataWithMarkerForOthers(precomputedData.trendLineData),
         color: "yellow",
         showInLegend: false,
         lineWidth: 2,
-        marker: { enabled: true, radius: 4, symbol: "circle" },
+        enableMouseTracking: false,
       },
       {
-        data: precomputedData.estimatedData,
+        data: dataWithMarkerForConsumedWHAndEstimatedPower(
+          precomputedData.estimatedData
+        ),
         name: "Estimated Power",
         color: "grey",
+        lineWidth: 2,
         marker: {
-          enabled: true,
-          radius: 4,
           symbol: "circle",
         },
-        lineWidth: 2,
       },
       {
-        data: precomputedData.consumedData,
+        data: dataWithMarkerForConsumedWHAndEstimatedPower(
+          precomputedData.consumedData
+        ),
         name: "Consumed WH in this term",
         color: "green",
+        lineWidth: 2,
         marker: {
-          enabled: true,
-          radius: 4,
           symbol: "circle",
         },
-        lineWidth: 2,
       },
     ],
-    tooltip: { shared: true, valueSuffix: " W" },
     credits: { enabled: false },
   };
 
