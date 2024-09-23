@@ -30,7 +30,7 @@ const sampleChartData = [
   { value: 0, status: 1 },
   { value: 0, status: 1 },
   { value: 0, status: 1 },
-  { value: 0, status: 1 },
+  { value: 1000, status: 1 },
   { value: 0, status: 1 },
   { value: 0, status: 2 },
   { value: 0, status: 2 },
@@ -43,12 +43,21 @@ export const HighChart = () => {
   );
 
   const precomputedData = useMemo(() => {
-    const consumedData = sampleChartData.map((a, index) =>
-      index <= breakdownPoint ? a.value : null
-    );
-    const estimatedData = sampleChartData.map((a, index) =>
-      index >= breakdownPoint ? a.value : null
-    );
+    let dataCount = 0;
+    const consumedData = sampleChartData.map((a, index) => {
+      if (index <= breakdownPoint) {
+        dataCount = dataCount + a.value;
+        return dataCount;
+      }
+      return null;
+    });
+    const estimatedData = sampleChartData.map((a, index) => {
+      if (index >= breakdownPoint) {
+        dataCount = dataCount + a.value;
+        return dataCount;
+      }
+      return null;
+    });
     const targetValueData = Array(sampleChartData.length).fill(1000);
     const alarmValueData = Array(sampleChartData.length).fill(2000);
     const trendLineData = sampleChartData.map(
@@ -129,7 +138,6 @@ export const HighChart = () => {
       },
     },
     yAxis: {
-      max: 2500,
       min: 0,
       title: { text: "Demand (KW)" },
       tickInterval: 500,
